@@ -1,0 +1,1 @@
+export { default as TemplateText } from '../components/template-text';
