@@ -19,6 +19,10 @@ body {
   margin: 0;
 }
 
+#t-editor p {
+  page-break-inside: avoid;
+}
+
 html,
 body,
 #root,

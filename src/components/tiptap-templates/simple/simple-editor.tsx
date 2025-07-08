@@ -97,6 +97,9 @@ import TableRow from '@tiptap/extension-table-row'
 import html2pdf from 'html2pdf.js';
 // import htmlDocx from 'html-docx-js/dist/html-docx';
 
+import { Document, Packer, Paragraph } from "docx";
+import { saveAs } from "file-saver";
+
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -282,9 +285,17 @@ export function SimpleEditor() {
 
   const handleDownload = () => {
     const element = document.getElementById('t-editor');
+    const options = {
+      margin: [0.3, 0.3, 0.3, 0.3],  // 0.3 inch padding top, right, bottom, left
+      filename: 'document.pdf',
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+      html2canvas: { scale: 2 },
+    };
+  
     html2pdf()
+      .set(options)
       .from(element)
-      .save('document.pdf');
+      .save();
   };
 
   // const handleDownloadDOCX = () => {
@@ -299,6 +310,60 @@ export function SimpleEditor() {
   //   a.click();
   //   URL.revokeObjectURL(url);
   // };
+
+  // const handleExport = async () => {
+  //   if (!editor) return;
+
+  //   // Get HTML string from Tiptap
+  //   const html = editor.getHTML();
+
+  //   // Always wrap in full HTML so Word opens it properly
+  //   const fullHtml = `
+  //     <html>
+  //       <head>
+  //         <meta charset="utf-8">
+  //         <title>Document</title>
+  //       </head>
+  //       <body>${html}</body>
+  //     </html>`;
+
+  //   // Dynamic import so Vite doesn't bundle html-docx-js
+  //   const htmlDocx = await import('html-docx-js/dist/html-docx');
+    
+  //   // Convert HTML to docx blob
+  //   const docxBlob = htmlDocx.asBlob(fullHtml);
+
+  //   // Trigger download
+  //   const url = URL.createObjectURL(docxBlob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'document.docx';
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // };
+
+  const handleExport = async () => {
+    if (!editor) return;
+
+    // Get plain text from Tiptap
+    const text = editor.getText();
+
+    // Build DOCX document
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph("📄 Exported from my Tiptap editor:"),
+            new Paragraph(text),
+          ],
+        },
+      ],
+    });
+
+    // Create Blob and trigger download
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, "document.docx");
+  };
 
   return (
     <EditorContext.Provider value={{ editor }}>
@@ -330,7 +395,7 @@ export function SimpleEditor() {
 
       <div>
          <button onClick={handleDownload}>Export PDF</button>
-         {/* <button onClick={handleDownloadDOCX}>Export DOCX</button> */}
+         <button onClick={handleExport}>Export DOCX</button>
       </div>
 
       <div className="col-group">
