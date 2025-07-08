@@ -93,6 +93,11 @@ import TableCell from '@tiptap/extension-table-cell'
 import TableHeader from '@tiptap/extension-table-header'
 import TableRow from '@tiptap/extension-table-row'
 
+// html to pdf
+import html2pdf from 'html2pdf.js';
+// import htmlDocx from 'html-docx-js/dist/html-docx';
+
+
 const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
@@ -259,6 +264,9 @@ export function SimpleEditor() {
       TableCell,
     ],
     content: content,
+    onUpdate : ({editor})=>{
+        console.log("When Updated : ", editor.getHTML())
+    }
   })
 
   const bodyRect = useCursorVisibility({
@@ -272,8 +280,29 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView])
 
+  const handleDownload = () => {
+    const element = document.getElementById('t-editor');
+    html2pdf()
+      .from(element)
+      .save('document.pdf');
+  };
+
+  // const handleDownloadDOCX = () => {
+  //   const html = editor?.getHTML(); // get HTML from Tiptap
+  //   const docxBlob = htmlDocx.asBlob(html);
+
+  //   // create download link
+  //   const url = URL.createObjectURL(docxBlob);
+  //   const a = document.createElement('a');
+  //   a.href = url;
+  //   a.download = 'document.docx';
+  //   a.click();
+  //   URL.revokeObjectURL(url);
+  // };
+
   return (
     <EditorContext.Provider value={{ editor }}>
+     
       <Toolbar
         ref={toolbarRef}
         style={
@@ -299,6 +328,11 @@ export function SimpleEditor() {
         )}
       </Toolbar>
 
+      <div>
+         <button onClick={handleDownload}>Export PDF</button>
+         {/* <button onClick={handleDownloadDOCX}>Export DOCX</button> */}
+      </div>
+
       <div className="col-group">
       <div className="sidebar">
         <div className="sidebar-options">
@@ -309,11 +343,15 @@ export function SimpleEditor() {
         </div>
       </div>
       <div className="main">
+        <div id="t-editor">
         <EditorContent
           editor={editor}
           role="presentation"
           className="simple-editor-content"
         />
+
+        </div>
+       
       </div>
      
       </div>
